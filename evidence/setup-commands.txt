@@ -1,0 +1,29 @@
+PS> mkdir taskmanager
+PS> cd taskmanager
+PS> python -m venv .venv
+Exit code: 0
+Python commands use the new .venv interpreter directly.
+PS> python -m pip install Django==5.2.17
+Collecting Django==5.2.17
+  Using cached django-5.2.17-py3-none-any.whl.metadata (4.1 kB)
+Collecting asgiref>=3.8.1 (from Django==5.2.17)
+  Using cached asgiref-3.12.1-py3-none-any.whl.metadata (9.4 kB)
+Collecting sqlparse>=0.3.1 (from Django==5.2.17)
+  Using cached sqlparse-0.6.0-py3-none-any.whl.metadata (6.0 kB)
+Collecting tzdata (from Django==5.2.17)
+  Using cached tzdata-2026.5-py2.py3-none-any.whl.metadata (1.4 kB)
+Using cached django-5.2.17-py3-none-any.whl (8.3 MB)
+Using cached asgiref-3.12.1-py3-none-any.whl (25 kB)
+Using cached sqlparse-0.6.0-py3-none-any.whl (50 kB)
+Using cached tzdata-2026.5-py2.py3-none-any.whl (347 kB)
+Installing collected packages: tzdata, sqlparse, asgiref, Django
+Successfully installed Django-5.2.17 asgiref-3.12.1 sqlparse-0.6.0 tzdata-2026.5
+Exit code: 0
+PS> django-admin startproject taskmanager .
+Exit code: 0
+PS> python manage.py startapp tasks
+Exit code: 0
+PS> python manage.py check
+System check identified no issues (0 silenced).
+Exit code: 0
+Created: manage.py, taskmanager/settings.py, taskmanager/urls.py, tasks/views.py

@@ -1,0 +1,123 @@
+[
+  {
+    "method": "GET",
+    "url": "/health/",
+    "status": 200,
+    "body": {
+      "status": "ok"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "/",
+    "status": 200,
+    "body": {
+      "project": "Task Manager",
+      "message": "Қош келдіңіз!"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "/about/",
+    "status": 200,
+    "body": {
+      "project": "Task Manager",
+      "author": "Джанкилиш Ерсайн",
+      "module": "Django негіздері"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "/tasks/",
+    "status": 200,
+    "body": [
+      {
+        "id": 4,
+        "title": "Миграцияларды қолдану",
+        "description": "Практикалық жұмыс",
+        "status": "todo",
+        "created_at": "2026-10-04T18:31:26.645833+00:00"
+      },
+      {
+        "id": 3,
+        "title": "Task моделін жасау",
+        "description": "Практикалық жұмыс",
+        "status": "done",
+        "created_at": "2026-10-04T18:31:26.638822+00:00"
+      },
+      {
+        "id": 2,
+        "title": "URL маршруттарын қосу",
+        "description": "Практикалық жұмыс",
+        "status": "in_progress",
+        "created_at": "2026-10-04T18:31:26.630819+00:00"
+      },
+      {
+        "id": 1,
+        "title": "Django жобасын құру",
+        "description": "Практикалық жұмыс",
+        "status": "done",
+        "created_at": "2026-10-04T18:31:26.615725+00:00"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "url": "/tasks/1/",
+    "status": 200,
+    "body": {
+      "id": 1,
+      "title": "Django жобасын құру",
+      "description": "Практикалық жұмыс",
+      "status": "done",
+      "created_at": "2026-10-04T18:31:26.615725+00:00"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "/tasks/999/",
+    "status": 404,
+    "body": {
+      "error": "Тапсырма табылмады"
+    }
+  },
+  {
+    "method": "POST",
+    "url": "/echo/",
+    "status": 200,
+    "body": {
+      "message": "Сәлем Django",
+      "number": 4
+    }
+  },
+  {
+    "method": "POST",
+    "url": "/echo/",
+    "status": 400,
+    "body": {
+      "error": "JSON пішімі қате"
+    }
+  },
+  {
+    "method": "GET",
+    "url": "/tasks/ [Python list]",
+    "status": 200,
+    "body": [
+      {
+        "id": 1,
+        "title": "Django жобасын құру",
+        "status": "done"
+      },
+      {
+        "id": 2,
+        "title": "URL маршруттарын қосу",
+        "status": "in_progress"
+      },
+      {
+        "id": 3,
+        "title": "Task моделін жасау",
+        "status": "todo"
+      }
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+HTTP/1.1 400 Bad Request
+Date: Tue, 06 Oct 2026 08:57:40 GMT
+Server: WSGIServer/0.2 CPython/3.12.14
+Content-Type: application/json
+X-Frame-Options: DENY
+Content-Length: 39
+X-Content-Type-Options: nosniff
+Referrer-Policy: same-origin
+Cross-Origin-Opener-Policy: same-origin
+
+{"error": "JSON пішімі қате"}

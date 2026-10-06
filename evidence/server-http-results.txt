@@ -1,0 +1,15 @@
+GET /health/
+HTTP 200
+{"status": "ok"}
+
+GET /tasks/999/
+HTTP 404
+{"error": "Тапсырма табылмады"}
+
+POST /echo/
+HTTP 200
+{"message": "Hello", "number": 4}
+
+POST /echo/
+HTTP 400
+{"error": "JSON пішімі қате"}
