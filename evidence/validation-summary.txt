@@ -1,0 +1,5 @@
+Python 3.12.14, Django 5.2.17
+manage.py check: no issues
+makemigrations --check --dry-run: No changes detected
+manage.py test tasks -v 2: Ran 14 tests in 3.248s; OK
+Date: 2026-10-04
