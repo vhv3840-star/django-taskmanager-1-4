@@ -1,61 +1,101 @@
 import json
+
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
+
 from .models import Task
 
+
+# Екінші жұмыста деректер осы тізімде сақталады.
 DEMO_TASKS = [
-    {'id': 1, 'title': 'Django жобасын құру', 'status': 'done'},
-    {'id': 2, 'title': 'URL маршруттарын қосу', 'status': 'in_progress'},
-    {'id': 3, 'title': 'Task моделін жасау', 'status': 'todo'},
+    {"id": 1, "title": "Django жобасын құру", "status": "done"},
+    {"id": 2, "title": "URL маршруттарын қосу", "status": "in_progress"},
+    {"id": 3, "title": "Task моделін жасау", "status": "todo"},
 ]
 
-def json_response(data, **kwargs):
-    return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False}, **kwargs)
 
 @require_GET
 def health(request):
-    return json_response({'status': 'ok'})
+    return JsonResponse({"status": "ok"})
+
 
 @require_GET
 def home(request):
-    return json_response({'project': 'Task Manager', 'message': 'Қош келдіңіз!'})
+    return JsonResponse({
+        "project": "Task Manager",
+        "message": "Қош келдіңіз!",
+    }, json_dumps_params={"ensure_ascii": False})
+
 
 @require_GET
 def about(request):
-    return json_response({'project': 'Task Manager', 'author': 'Джанкилиш Ерсайн', 'module': 'Django негіздері'})
+    return JsonResponse({
+        "project": "Task Manager",
+        "author": "Джанкилиш Ерсайн",
+        "module": "Django негіздері",
+    }, json_dumps_params={"ensure_ascii": False})
 
-def serialize_task(task):
-    return {'id': task.pk, 'title': task.title, 'description': task.description,
-            'status': task.status, 'created_at': task.created_at.isoformat()}
+
+# Дерекқордағы объектіні JSON үшін сөздікке айналдырамыз.
+def task_to_dict(task):
+    return {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "status": task.status,
+        "created_at": task.created_at.isoformat(),
+    }
+
 
 @require_GET
 def task_list(request):
-    data = ([serialize_task(task) for task in Task.objects.all()]
-            if settings.TASKS_USE_DB else DEMO_TASKS)
-    return json_response(data)
+    if settings.TASKS_USE_DB:
+        tasks = []
+        for task in Task.objects.all():
+            tasks.append(task_to_dict(task))
+    else:
+        tasks = DEMO_TASKS
+
+    return JsonResponse(tasks, safe=False,
+                        json_dumps_params={"ensure_ascii": False})
+
 
 @require_GET
 def task_detail(request, id):
     if settings.TASKS_USE_DB:
-        task = Task.objects.filter(pk=id).first()
-        data = serialize_task(task) if task else None
-    else:
-        data = next((task for task in DEMO_TASKS if task['id'] == id), None)
-    if data is None:
-        return json_response({'error': 'Тапсырма табылмады'}, status=404)
-    return json_response(data)
+        try:
+            task = Task.objects.get(id=id)
+        except Task.DoesNotExist:
+            return JsonResponse({"error": "Тапсырма табылмады"}, status=404,
+                                json_dumps_params={"ensure_ascii": False})
+        return JsonResponse(task_to_dict(task),
+                            json_dumps_params={"ensure_ascii": False})
 
+    for task in DEMO_TASKS:
+        if task["id"] == id:
+            return JsonResponse(task, json_dumps_params={"ensure_ascii": False})
+
+    return JsonResponse({"error": "Тапсырма табылмады"}, status=404,
+                        json_dumps_params={"ensure_ascii": False})
+
+
+# NaN және Infinity JSON форматында қолданылмайды.
 def reject_constant(value):
-    raise ValueError(f'Invalid JSON constant: {value}')
+    raise ValueError("JSON мәні қате: " + value)
 
-# Only the learning echo endpoint is exempt; Admin keeps CSRF protection.
+
+# CSRF тек осы оқу маршруты үшін өшірілген.
 @csrf_exempt
 @require_POST
 def echo(request):
     try:
-        data = json.loads(request.body.decode('utf-8'), parse_constant=reject_constant)
+        text = request.body.decode("utf-8")
+        data = json.loads(text, parse_constant=reject_constant)
     except (UnicodeDecodeError, ValueError):
-        return json_response({'error': 'JSON пішімі қате'}, status=400)
-    return json_response(data)
+        return JsonResponse({"error": "JSON пішімі қате"}, status=400,
+                            json_dumps_params={"ensure_ascii": False})
+
+    return JsonResponse(data, safe=False,
+                        json_dumps_params={"ensure_ascii": False})

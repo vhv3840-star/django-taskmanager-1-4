@@ -1,14 +1,15 @@
 from django.db import models
 
 class Task(models.Model):
-    class Status(models.TextChoices):
-        TODO = 'todo', 'Жоспарланған'
-        IN_PROGRESS = 'in_progress', 'Орындалып жатыр'
-        DONE = 'done', 'Аяқталған'
+    STATUS_CHOICES = [
+        ('todo', 'Жоспарланған'),
+        ('in_progress', 'Орындалып жатыр'),
+        ('done', 'Аяқталған'),
+    ]
 
     title = models.CharField('Атауы', max_length=200)
     description = models.TextField('Сипаттамасы', blank=True)
-    status = models.CharField('Күйі', max_length=20, choices=Status.choices, default=Status.TODO)
+    status = models.CharField('Күйі', max_length=20, choices=STATUS_CHOICES, default='todo')
     created_at = models.DateTimeField('Құрылған уақыты', auto_now_add=True)
 
     class Meta:

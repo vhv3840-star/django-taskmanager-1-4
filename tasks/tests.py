@@ -1,8 +1,8 @@
 import json
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.test import Client, TestCase, override_settings
+from django.conf import settings
 from .models import Task
 
 class EndpointTests(TestCase):
@@ -52,15 +52,20 @@ class EndpointTests(TestCase):
     def test_csrf_is_only_exempt_for_echo(self):
         client = Client(enforce_csrf_checks=True)
         self.assertEqual(client.post('/echo/', '{}', content_type='application/json').status_code, 200)
-        self.assertEqual(client.post('/admin/login/', {}).status_code, 403)
+        self.assertIn('django.middleware.csrf.CsrfViewMiddleware', settings.MIDDLEWARE)
+        self.assertEqual(client.post('/health/', {}).status_code, 403)
+
+    def test_admin_removed(self):
+        self.assertEqual(self.client.get('/admin/').status_code, 404)
+        self.assertNotIn('django.contrib.admin', settings.INSTALLED_APPS)
 
 class ModelTests(TestCase):
     def test_crud_filter_order(self):
         a = Task.objects.create(title='First')
-        b = Task.objects.create(title='Second', status=Task.Status.DONE)
+        b = Task.objects.create(title='Second', status='done')
         self.assertEqual(Task.objects.filter(status='done').count(), 1)
         self.assertEqual(list(Task.objects.order_by('created_at', 'id').values_list('id', flat=True)), [a.pk, b.pk])
-        a.status = Task.Status.IN_PROGRESS
+        a.status = 'in_progress'
         a.save()
         a.refresh_from_db()
         self.assertEqual(a.status, 'in_progress')
@@ -72,37 +77,3 @@ class ModelTests(TestCase):
             Task(title='Invalid', status='wrong').full_clean()
         with self.assertRaises(IntegrityError), transaction.atomic():
             Task.objects.create(title='Invalid', status='wrong')
-
-class AdminTests(TestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_superuser('tester', 'tester@example.com', 'Test-only-Password-584!')
-        self.client.force_login(self.user)
-
-    def test_requires_login(self):
-        self.assertEqual(Client().get('/admin/tasks/task/').status_code, 302)
-
-    def test_admin_columns_search_and_filter(self):
-        task = Task.objects.create(title='Unique needle', status='done')
-        Task.objects.create(title='Other', status='todo')
-        r = self.client.get('/admin/tasks/task/', {'q': 'needle', 'status__exact': 'done'})
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(list(r.context['cl'].result_list), [task])
-        self.assertEqual(r.context['cl'].list_display, ['action_checkbox', 'title', 'status', 'created_at'])
-
-    def test_admin_crud_with_csrf(self):
-        client = Client(enforce_csrf_checks=True)
-        client.force_login(self.user)
-        client.get('/admin/tasks/task/add/')
-        token = client.cookies['csrftoken'].value
-        r = client.post('/admin/tasks/task/add/', {'csrfmiddlewaretoken': token,
-            'title': 'Admin created', 'description': 'HTTP form', 'status': 'todo', '_save': '1'})
-        self.assertEqual(r.status_code, 302)
-        task = Task.objects.get(title='Admin created')
-        r = client.post(f'/admin/tasks/task/{task.pk}/change/', {'csrfmiddlewaretoken': token,
-            'title': 'Admin updated', 'description': 'HTTP form', 'status': 'done', '_save': '1'})
-        self.assertEqual(r.status_code, 302)
-        task.refresh_from_db()
-        self.assertEqual(task.title, 'Admin updated')
-        r = client.post(f'/admin/tasks/task/{task.pk}/delete/', {'csrfmiddlewaretoken': token, 'post': 'yes'})
-        self.assertEqual(r.status_code, 302)
-        self.assertFalse(Task.objects.filter(pk=task.pk).exists())

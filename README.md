@@ -1,117 +1,109 @@
-# Task Manager — Django практикалық жұмыстар 1–4
+# Task Manager — 1–3 практикалық жұмыс
 
-Автор: Джанкилиш Ерсайн. Python 3.10 немесе жаңасы, Django 5.2.17, SQLite.
+Автор: Джанкилиш Ерсайн. Django 5.2.17, Python 3.10 немесе жаңасы, SQLite.
 
-## Орнату және іске қосу
+## PyCharm арқылы іске қосу
 
-PowerShell терминалында жоба қалтасына өтіп орындаңыз:
+Архивті ашып, taskmanager қалтасын PyCharm бағдарламасында ашыңыз.
+Терминалда келесі командаларды ретімен орындаңыз:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python manage.py migrate
-python manage.py createsuperuser
 python manage.py runserver
 ```
 
-PowerShell орта белсендіруді бұғаттаса, саясатты өзгертпей `.\.venv\Scripts\python.exe` арқылы командаларды орындауға болады.
-`http://127.0.0.1:8000/health/` және `http://127.0.0.1:8000/admin/` беттерін ашыңыз.
-Admin үшін өзіңіз жасаған суперпайдаланушы логині мен құпиясөзін қолданыңыз.
+Егер ортаны белсендіру командасы орындалмаса, оның Python файлын тікелей қолданыңыз:
 
-## Жұмыстар бойынша файлдар
+```powershell
+.\.venv\Scripts\python.exe manage.py runserver
+```
 
-- №1: `taskmanager/settings.py`, `tasks/apps.py`, `/health/`.
-- №2: `tasks/urls.py`, `tasks/views.py`, GET/POST және JSON қателері.
-- №3: `tasks/models.py`, `tasks/migrations/0001_initial.py`, `demo_shell.py`.
-- №4: `tasks/admin.py`, суперпайдаланушы, Admin CRUD, іздеу және сүзгі.
+Серверді тоқтату: Ctrl+C. Сервер жұмыс істеп тұрғанда басқа командаларға екінші терминал ашыңыз.
 
-`manage.py` командаларды орындайды; `settings.py` конфигурацияны сақтайды;
-`urls.py` URL-ді view-ға сәйкестендіреді; `views.py` сұранысқа жауап дайындайды.
+## 1-жұмыс
 
-## №2 Python тізімі режимі
+tasks қосымшасы settings.py ішіндегі INSTALLED_APPS тізіміне қосылған.
+/health/ адресі сервердің жауап беретінін тексереді.
+
+```powershell
+python manage.py check
+```
+
+Браузерде http://127.0.0.1:8000/health/ ашыңыз. Жауап: {"status": "ok"}.
+
+## 2-жұмыс
+
+Бұл кезеңде тапсырмалар Python тізімінен алынады.
+Серверді тоқтатып, тізім режимін қосыңыз:
 
 ```powershell
 $env:TASKS_USE_DB = '0'
 python manage.py runserver
 ```
 
-Үш демонстрациялық тапсырма Python тізімінен қайтарылады. №3–4 үшін серверді тоқтатып,
-`$env:TASKS_USE_DB = '1'` орнатыңыз немесе `Remove-Item Env:TASKS_USE_DB` орындаңыз.
-SQLite режимі әдепкіде қосылған.
+Браузерде ретімен ашыңыз:
 
-## ORM және Admin әрекеттерін қайталау
+- http://127.0.0.1:8000/
+- http://127.0.0.1:8000/about/
+- http://127.0.0.1:8000/tasks/
+- http://127.0.0.1:8000/tasks/1/
+- http://127.0.0.1:8000/tasks/999/
 
-Жаңа, тапсырмалар кестесі бос база үшін:
+Алғашқы төрт адрес 200 жауабын қайтарады. Соңғы адрес жоқ тапсырмаға арналған, сондықтан 404 береді.
 
-```powershell
-python manage.py shell -c "exec(open('demo_shell.py', encoding='utf-8').read())"
-```
-
-Скрипт Shell арқылы бес тапсырма жасайды, фильтрлейді, сұрыптайды, біреуін өзгертеді,
-біреуін жояды. Одан кейін Django test Client көмегімен нақты URL және Admin формаларына
-HTTP сұраныстарын жібереді; Admin CSRF тексеруі қосулы. Демо суперпайдаланушыға кездейсоқ
-құпиясөз жасалады; оны браузер арқылы қолдану үшін `python manage.py changepassword demo_admin`
-орындаңыз. Скрипт бастапқы деректерді жоғалтпау үшін бос емес Task кестесінде тоқтайды.
-`evidence/` қалтасында орындалған сұраныстар нәтижелері берілген.
-
-## Сұраныстар
+Екінші PowerShell терминалында POST сұранысын тексеріңіз:
 
 ```powershell
-curl.exe -i http://127.0.0.1:8000/health/
-curl.exe -i http://127.0.0.1:8000/tasks/999/
-Set-Content -Encoding ascii echo.json '{"message":"Hello","number":4}'
-curl.exe -i -X POST http://127.0.0.1:8000/echo/ -H "Content-Type: application/json" --data-binary '@echo.json'
-Set-Content -Encoding ascii invalid.json '{bad}'
-curl.exe -i -X POST http://127.0.0.1:8000/echo/ -H "Content-Type: application/json" --data-binary '@invalid.json'
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/echo/" -Method Post -ContentType "application/json" -Body '{"message":"Hello Django"}'
 ```
 
-`/echo/` оқу мақсаты үшін ғана `csrf_exempt` қолданады. CSRF middleware және Admin қорғауы
-қосулы. Echo JSON мәнін өзгертпей қайтарады; бос орындар мен JSON сериализациясы өзгеруі мүмкін.
+/echo/ келген JSON мәнін қайтарады. Қате JSON үшін 400, GET үшін 405 жауабы келеді.
+CSRF тек echo функциясында өшірілген; жалпы middleware сақталған.
+
+## 3-жұмыс
+
+Task моделінің өрістері: title, description, status және created_at.
+status мәндері: todo, in_progress және done.
+Серверді тоқтатып, дерекқор режимін қосыңыз:
+
+```powershell
+$env:TASKS_USE_DB = '1'
+python manage.py makemigrations tasks
+python manage.py migrate
+python manage.py shell
+```
+
+Shell ішінде ORM мысалын орындаңыз:
+
+```python
+exec(open('orm_demo.py', encoding='utf-8').read())
+```
+
+Мысал бес жазба қосады, барлық жазбаны оқиды, күйі бойынша сүзеді және уақыт бойынша сұрыптайды.
+Бірінші жазбаны өзгертеді, соңғы жазбаны өшіреді. Соңында төрт тапсырма қалады.
+Мысал бос Task кестесінде орындалады. Кестеде бұрынғы жазбалар болса, оларды өзгертпей тоқтайды.
+Shell бағдарламасынан шығу: exit().
+
+
+## Файлдардың қызметі
+
+- manage.py — Django командаларын орындау.
+- taskmanager/settings.py — жоба баптаулары.
+- taskmanager/urls.py — tasks маршруттарын қосу.
+- tasks/urls.py — адрес пен функцияны байланыстыру.
+- tasks/views.py — сұранысты өңдеу және JSON жауап беру.
+- tasks/models.py — тапсырма моделі.
+- tasks/migrations/ — дерекқор кестесінің құрылымы.
+- orm_demo.py — үшінші жұмыстың ORM мысалы.
+- tasks/tests.py — маршруттар мен модельді тексеру.
 
 ## Тексеру
 
 ```powershell
 python manage.py check
 python manage.py makemigrations --check --dry-run
-python manage.py test tasks -v 2
+python manage.py test tasks
 ```
-
-## Git репозиторийі
-
-https://github.com/vhv3840-star/django-taskmanager-1-4
-
-```powershell
-git clone https://github.com/vhv3840-star/django-taskmanager-1-4.git
-cd django-taskmanager-1-4
-```
-
-Репозиторий ашық. Жобаны сілтеме арқылы қарауға және клондауға болады.
-Дерекқор, виртуалды орта, IDE баптаулары және құпиясөздер Git-ке қосылмайды.
-Бұл жоба жергілікті оқу жұмысына арналған.
-
-## Ресми құжаттама
-
-- https://docs.djangoproject.com/en/5.2/intro/tutorial01/
-- https://docs.djangoproject.com/en/5.2/ref/request-response/
-- https://docs.djangoproject.com/en/5.2/topics/db/queries/
-- https://docs.djangoproject.com/en/5.2/topics/migrations/
-- https://docs.djangoproject.com/en/5.2/ref/contrib/admin/
-- https://docs.djangoproject.com/en/5.2/ref/csrf/
-
-## PyCharm және есеп суреттері
-
-PyCharm ішінде осы қалтаны жоба ретінде ашып, Python интерпретаторы ретінде
-`.venv\Scripts\python.exe` таңдаңыз. `.venv` архивке қосылмайды, оны жоғарыдағы
-командалармен жасаңыз. `screenshots/` ішіндегі 18 PNG — осы бағдарламадан түсірілген
-нақты суреттер. Curl жауаптары `evidence/curl-valid.txt` және `curl-invalid.txt` ішінде.
-
-`practice1.py` орта мен баптауларды тексереді. `check_task1.py` іске қосылған
-8000 портындағы сервердің Health жауабын тексереді. `practice2.py` Python тізімі режиміндегі
-8001 портындағы серверге сұраныстар жібереді. `practice3.py` бос Task кестесінде
-миграция және бес жазбамен ORM демонстрациясын орындайды. `practice4.py` үшін
-`screenshot_admin` атымен өз суперпайдаланушыңызды жасаңыз; бұл скрипт Django test Client
-арқылы Admin HTTP формаларын тексереді. `practice_tests.py` 14 тестті іске қосады.
-
-Admin браузер интерфейсінің суреті алынбады: браузер құралы жергілікті бетті ашуды
-бұғаттады. Admin CRUD нәтижелері нақты HTTP формалары мен тесттер арқылы көрсетілген.
